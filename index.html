@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Cash Flow — Sala de Musculación Club LG, La Granja</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: white; color: #1a1a1a; padding: 28px 32px; }
+
+  /* Botón de impresión — se oculta al imprimir */
+  .print-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 999;
+    background: #2a78d6; color: white; border: none; border-radius: 6px;
+    padding: 10px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .print-btn:hover { background: #1a5faa; }
+
+  .header { border-left: 5px solid #2a78d6; padding: 10px 16px; margin-bottom: 20px; }
+  .header h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 4px; }
+  .header p  { font-size: 11px; color: #666; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .kpi  { background: #f0f4fb; border: 1px solid #d0ddf0; border-radius: 6px; padding: 12px 14px; }
+  .kpi-val { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+  .kpi-lbl { font-size: 10.5px; color: #555; margin-bottom: 2px; }
+  .kpi-sub { font-size: 9.5px; color: #888; }
+
+  .section { margin-bottom: 28px; }
+  .section h2 { font-size: 12px; font-weight: 700; color: #2a78d6; text-transform: uppercase;
+                letter-spacing: .04em; margin-bottom: 6px; border-bottom: 1px solid #d0ddf0; padding-bottom: 4px; }
+  .section p  { font-size: 10px; color: #666; margin-bottom: 8px; }
+
+  .chart-wrap { position: relative; width: 100%; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+  .li     { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: #444; }
+  .swatch { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .sline  { width: 20px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+  .note   { font-size: 9.5px; color: #888; margin-top: 6px; border-top: 1px solid #eee; padding-top: 6px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  th { background: #374151; color: white; padding: 7px 10px; text-align: left; }
+  td { padding: 6px 10px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) td { background: #f9fafb; }
+  tr.total td { background: #e6f4ea; font-weight: 700; }
+
+  .footer { font-size: 9px; color: #bbb; text-align: center; margin-top: 24px;
+            border-top: 1px solid #eee; padding-top: 10px; }
+
+  /* ── Print styles ── */
+  @page { size: A4; margin: 1.5cm; }
+  @media print {
+    .print-btn { display: none !important; }
+    body { padding: 0; font-size: 10px; }
+    .chart-wrap { break-inside: avoid; }
+    .section { break-inside: avoid; }
+    canvas { max-height: 260px !important; }
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">⬇ Guardar como PDF</button>
+
+<div class="header">
+  <h1>Proyección de Cash Flow — Sala de Musculación</h1>
+  <p>Club LG, La Granja &nbsp;·&nbsp; Agosto 2026 – Enero 2028 &nbsp;·&nbsp; Opción B (amortización diferida 6 meses) &nbsp;·&nbsp; Volumen Fitness</p>
+</div>
+
+<div class="kpis">
+  <div class="kpi">
+    <div class="kpi-val" style="color:#2a78d6">Noviembre 2026</div>
+    <div class="kpi-lbl">Break-even operativo</div>
+    <div class="kpi-sub">Mes 4 · 73 socios</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val" style="color:#d03b3b">$3.500.000</div>
+    <div class="kpi-lbl">Inversión total Art. 4</div>
+    <div class="kpi-sub">$875K/parte: S.F. (Franco+Agustín) + Cristian</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val" style="color:#0ca30c">$4.985.000</div>
+    <div class="kpi-lbl">Superávit desde mes 13</div>
+    <div class="kpi-sub">Ago 2027 · Onyx cancelado</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val">$1.246.000</div>
+    <div class="kpi-lbl">Franco / Agustín c/u · mes 13</div>
+    <div class="kpi-sub">25% / 25% / 50% · Cristian $2.493K</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Composición de costos vs ingresos — ago 2026 a ene 2028</h2>
+  <p>Barras apiladas = estructura de costos. Línea verde = ingresos. El espacio entre la línea y las barras es el superávit (o déficit si la línea queda abajo).</p>
+  <div class="chart-wrap" style="height:300px"><canvas id="c1"></canvas></div>
+  <div class="legend">
+    <div class="li"><div class="swatch" style="background:#85B7EB"></div> Costos fijos $200K</div>
+    <div class="li"><div class="swatch" style="background:#2a78d6"></div> Profe tarde + X $700K</div>
+    <div class="li"><div class="swatch" style="background:#9966cc"></div> Cristian mañana $504K</div>
+    <div class="li"><div class="swatch" style="background:#eda100"></div> Onyx $585K (hasta jul 2027)</div>
+    <div class="li"><div class="swatch" style="background:#1baf7a"></div> Amortización ($0 → $211K feb 2027)</div>
+    <div class="li"><div class="swatch" style="background:#d03b3b"></div> Inversión Art. 4 (one-shot)</div>
+    <div class="li"><div class="sline" style="background:#008300"></div> Ingresos</div>
+    <div class="li"><div class="sline" style="background:#e85d04; border-top: 2px dashed #e85d04; background:none; border-bottom:none; border-left:none; border-right:none; width:20px; height:0"></div> Socios activos (eje derecho)</div>
+  </div>
+  <p class="note">Costos operativos: Fase 1 (m1–6) $1.989.000 · Fase 2 (m7–12) $2.200.233 · Fase 3 (m13+) $1.615.233 &nbsp;|  Inversión Art. 4: $1.750.000 jul '26 + $1.750.000 sep '26 = $3.500.000 total ($875K/parte/fase · S.F. + Cristian 50/50)</p>
+</div>
+
+<div class="section">
+  <h2>Resultado mensual — superávit disponible para distribución 50/50</h2>
+  <p>Verde = superávit distribuible (25% Franco / 25% Agustín / 50% Cristian). Rojo = picos de inversión Art. 4 (jul y sep) o déficit operativo (cubierto 25%/25%/50% por los tres socios).</p>
+  <div class="chart-wrap" style="height:200px"><canvas id="c2"></canvas></div>
+  <p class="note">Picos en jul y sep '26: inversiones one-shot Art. 4 ($1.750K c/u). Salto positivo ago '27: cancelación de Onyx ($585K/mes menos).</p>
+</div>
+
+<div class="section">
+  <h2>Estructura de costos mensuales</h2>
+  <table>
+    <tr><th>Concepto</th><th>Monto/mes</th><th>Vigencia</th></tr>
+    <tr><td>Costos fijos (alquiler, servicios, etc.)</td><td>$200.000</td><td>Permanente</td></tr>
+    <tr><td>Profe turno tarde + profe X (vie–sáb mañana)</td><td>$700.000</td><td>Permanente</td></tr>
+    <tr><td>Cristian Molina — turno mañana (lun–jue, 4,5h/día × $7.000)</td><td>$504.000</td><td>Permanente</td></tr>
+    <tr><td>Financiación máquinas Onyx</td><td>$585.000</td><td>Meses 1–12 (ago 2026 – jul 2027)</td></tr>
+    <tr><td>Amortización inversión previa (Art. 6)</td><td>$0 → $211.233</td><td>Meses 1–6: $0 · Meses 7–36: $211.233</td></tr>
+    <tr><td>Inversión Art. 4 – Fase 1 (tapizado, pintura, iluminación, etc.)</td><td>$1.750.000</td><td>One-shot jul '26 · $875K/parte</td></tr>
+    <tr><td>Inversión Art. 4 – Fase 2 (caucho, espejos, MDF, cartel)</td><td>$1.750.000</td><td>One-shot sep '26 (≥30 socios) · $875K/parte</td></tr>
+    <tr class="total"><td>TOTAL INVERSIÓN ART. 4</td><td>$3.500.000</td><td>Socios Fundadores 50% / Cristian 50% ($875K c/parte/fase)</td></tr>
+    <tr class="total"><td>TOTAL Fase 1 (ago 2026 – ene 2027)</td><td>$1.989.000</td><td>Sin amortización</td></tr>
+    <tr class="total"><td>TOTAL Fase 2 (feb 2027 – jul 2027)</td><td>$2.200.233</td><td>Con Onyx + amortización</td></tr>
+    <tr class="total"><td>TOTAL Fase 3 (ago 2027 en adelante)</td><td>$1.615.233</td><td>Sin Onyx</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  Generado julio 2026 · Volumen Fitness — Club LG, La Granja ·
+  Acuerdo de socios: Franco Masnyj + Agustín Masnyj + Cristian Molina (25% / 25% / 50% remanente) ·
+  Inversión a recuperar: $6.336.990 en 30 cuotas de $211.233 (feb 2027 – jul 2029)
+</div>
+
+<script>
+const LBL = ["Jul '26","Ago '26","Sep","Oct","Nov","Dic","Ene '27","Feb","Mar","Abr","May","Jun","Jul","Ago '27","Sep","Oct","Nov","Dic","Ene '28"];
+const SOC = [0,25,40,57,73,88,101,113,123,132,140,146,150,150,150,150,150,150,150];
+const CUO = [33,33,33,33,33,36.3,36.3,36.3,36.3,40,40,40,40,44,44,44,44,48.4,48.4];
+const REV = SOC.map((s,i) => +(s*CUO[i]/1000).toFixed(3));
+
+const CF  = Array.from({length:19},(_,i) => i===0 ? 0 : 200/1000);          // alquiler desde ago
+const CP  = Array.from({length:19},(_,i) => i===0 ? 0 : 700/1000);          // profes desde ago
+const CC  = Array.from({length:19},(_,i) => i===0 ? 0 : 504/1000);          // Cristian desde ago
+const CO  = Array.from({length:19},(_,i) => i>=1 && i<=12 ? 585/1000 : 0);  // Onyx ago'26–jul'27
+const CA  = Array.from({length:19},(_,i) => i<7  ? 0 : 211.233/1000);       // amort. desde feb'27
+const INV = Array.from({length:19},(_,i) => i===0||i===2 ? 1.750 : 0);      // Fase1 jul, Fase2 sep
+const TOT = Array.from({length:19},(_,i) => CF[i]+CP[i]+CC[i]+CO[i]+CA[i]+INV[i]);
+const SUR = REV.map((r,i) => +(r-TOT[i]).toFixed(3));
+
+const gridC = '#e8e8e8', tickC = '#888', tf = {size:10,family:'Arial'};
+
+new Chart(document.getElementById('c1'), {
+  type: 'bar',
+  data: {
+    labels: LBL,
+    datasets: [
+      { label:'Costos fijos',    data:CF, backgroundColor:'#85B7EB', stack:'s', borderWidth:0 },
+      { label:'Profe tarde+X',   data:CP, backgroundColor:'#2a78d6', stack:'s', borderWidth:0 },
+      { label:'Cristian mañana', data:CC, backgroundColor:'#9966cc', stack:'s', borderWidth:0 },
+      { label:'Onyx',            data:CO, backgroundColor:'#eda100', stack:'s', borderWidth:0 },
+      { label:'Amortización',    data:CA, backgroundColor:'#1baf7a', stack:'s', borderWidth:0 },
+      { label:'Inversión Art. 4', data:INV, backgroundColor:'#d03b3b', stack:'s', borderWidth:0 },
+      { label:'Ingresos', type:'line', data:REV,
+        borderColor:'#008300', borderWidth:2.5,
+        pointRadius:3.5, pointBackgroundColor:'#008300',
+        tension:0.25, fill:false, order:0, yAxisID:'y' },
+      { label:'Socios activos', type:'line', data:SOC,
+        borderColor:'#e85d04', borderWidth:2, borderDash:[5,4],
+        pointRadius:3.5, pointBackgroundColor:'#e85d04',
+        tension:0.25, fill:false, order:0, yAxisID:'y2' }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    animation: { duration: 0 },
+    plugins: { legend:{ display:false },
+      tooltip:{ callbacks:{ label: c => {
+        if(c.dataset.yAxisID==='y2') return `Socios: ${c.parsed.y}`;
+        return `${c.dataset.label}: $${c.parsed.y.toFixed(2)}M`;
+      }}}},
+    scales: {
+      x: { stacked:true, grid:{display:false}, ticks:{color:tickC,font:tf} },
+      y: { stacked:true, grid:{color:gridC}, ticks:{color:tickC,font:tf,callback:v=>`$${v.toFixed(1)}M`} },
+      y2: { type:'linear', position:'right', grid:{display:false},
+            min:0, max:170,
+            ticks:{ color:'#e85d04', font:tf, stepSize:20, callback:v=>`${v} soc.` },
+ font:{size:9,family:'Arial'} } }
+    }
+  }
+});
+
+new Chart(document.getElementById('c2'), {
+  type: 'bar',
+  data: {
+    labels: LBL,
+    datasets:[{
+      data: SUR,
+      backgroundColor: SUR.map(s => s>=0 ? 'rgba(12,163,12,0.8)' : 'rgba(208,59,59,0.8)'),
+      borderRadius:3, borderWidth:0
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    animation: { duration: 0 },
+    plugins: { legend:{display:false},
+      tooltip:{ callbacks:{ label: c => {
+        const v=c.parsed.y;
+        return `${v>=0?'Superávit':'Déficit'}: ${v<0?'-':''}$${Math.abs(v).toFixed(2)}M`;
+      }}}},
+    scales: {
+      x: { grid:{display:false}, ticks:{color:tickC,font:tf} },
+      y: { grid:{color:gridC}, ticks:{color:tickC,font:tf,
+           callback:v=>(v<0?'-':'')+'$'+Math.abs(v).toFixed(1)+'M'} }
+    }
+  }
+});
+</script>
+</body>
+</html>
