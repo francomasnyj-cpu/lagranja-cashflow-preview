@@ -103,6 +103,7 @@
     <div class="li"><div class="swatch" style="background:#eda100"></div> Onyx $585K (hasta jul 2027)</div>
     <div class="li"><div class="swatch" style="background:#1baf7a"></div> Amortización ($0 → $211K feb 2027)</div>
     <div class="li"><div class="swatch" style="background:#d03b3b"></div> Inversión Art. 4 (one-shot)</div>
+    <div class="li"><div class="swatch" style="background:#7c3aed"></div> Compra máquinas Onyx (pago jul '26 $3.5M)</div>
     <div class="li"><div class="sline" style="background:#008300"></div> Ingresos</div>
     <div class="li"><div class="sline" style="background:#e85d04; border-top: 2px dashed #e85d04; background:none; border-bottom:none; border-left:none; border-right:none; width:20px; height:0"></div> Socios activos (eje derecho)</div>
   </div>
@@ -146,28 +147,30 @@ const SOC = [0,25,40,57,73,88,101,113,123,132,140,146,150,150,150,150,150,150,15
 const CUO = [33,33,33,33,33,36.3,36.3,36.3,36.3,40,40,40,40,44,44,44,44,48.4,48.4];
 const REV = SOC.map((s,i) => +(s*CUO[i]/1000).toFixed(3));
 
-const CF  = Array.from({length:19},(_,i) => i===0 ? 0 : 200/1000);          // alquiler desde ago
-const CP  = Array.from({length:19},(_,i) => i===0 ? 0 : 700/1000);          // profes desde ago
-const CC  = Array.from({length:19},(_,i) => i===0 ? 0 : 504/1000);          // Cristian desde ago
-const CO  = Array.from({length:19},(_,i) => i>=1 && i<=12 ? 585/1000 : 0);  // Onyx ago'26–jul'27
-const CA  = Array.from({length:19},(_,i) => i<7  ? 0 : 211.233/1000);       // amort. desde feb'27
-const INV = Array.from({length:19},(_,i) => i===0||i===2 ? 1.750 : 0);      // Fase1 jul, Fase2 sep
-const TOT = Array.from({length:19},(_,i) => CF[i]+CP[i]+CC[i]+CO[i]+CA[i]+INV[i]);
+const CF  = Array.from({length:19},(_,i) => i===0 ? 0 : 200/1000);
+const CP  = Array.from({length:19},(_,i) => i===0 ? 0 : 700/1000);
+const CC  = Array.from({length:19},(_,i) => i===0 ? 0 : 504/1000);
+const CO  = Array.from({length:19},(_,i) => i>=1 && i<=12 ? 585/1000 : 0);
+const CA  = Array.from({length:19},(_,i) => i<7  ? 0 : 211.233/1000);
+const INV   = Array.from({length:19},(_,i) => i===0||i===2 ? 1.750 : 0);
+const CONYX = Array.from({length:19},(_,i) => i===0 ? 3.500 : 0);
+const TOT   = Array.from({length:19},(_,i) => CF[i]+CP[i]+CC[i]+CO[i]+CA[i]+INV[i]+CONYX[i]);
 const SUR = REV.map((r,i) => +(r-TOT[i]).toFixed(3));
 
-const gridC = '#e8e8e8', tickC = '#888', tf = {size:10,family:'Arial'};
+const gridC = '#e8e8e8', tickC = '#888', tf = {size:10, family:'Arial'};
 
 new Chart(document.getElementById('c1'), {
   type: 'bar',
   data: {
     labels: LBL,
     datasets: [
-      { label:'Costos fijos',    data:CF, backgroundColor:'#85B7EB', stack:'s', borderWidth:0 },
-      { label:'Profe tarde+X',   data:CP, backgroundColor:'#2a78d6', stack:'s', borderWidth:0 },
-      { label:'Cristian mañana', data:CC, backgroundColor:'#9966cc', stack:'s', borderWidth:0 },
-      { label:'Onyx',            data:CO, backgroundColor:'#eda100', stack:'s', borderWidth:0 },
-      { label:'Amortización',    data:CA, backgroundColor:'#1baf7a', stack:'s', borderWidth:0 },
-      { label:'Inversión Art. 4', data:INV, backgroundColor:'#d03b3b', stack:'s', borderWidth:0 },
+      { label:'Costos fijos',     data:CF,  backgroundColor:'#85B7EB', stack:'s', borderWidth:0 },
+      { label:'Profe tarde+X',    data:CP,  backgroundColor:'#2a78d6', stack:'s', borderWidth:0 },
+      { label:'Cristian manana',  data:CC,  backgroundColor:'#9966cc', stack:'s', borderWidth:0 },
+      { label:'Onyx',             data:CO,  backgroundColor:'#eda100', stack:'s', borderWidth:0 },
+      { label:'Amortizacion',     data:CA,  backgroundColor:'#1baf7a', stack:'s', borderWidth:0 },
+      { label:'Inversion Art. 4', data:INV, backgroundColor:'#d03b3b', stack:'s', borderWidth:0 },
+      { label:'Compra maquinas Onyx', data:CONYX, backgroundColor:'#7c3aed', stack:'s', borderWidth:0 },
       { label:'Ingresos', type:'line', data:REV,
         borderColor:'#008300', borderWidth:2.5,
         pointRadius:3.5, pointBackgroundColor:'#008300',
@@ -180,19 +183,22 @@ new Chart(document.getElementById('c1'), {
   },
   options: {
     responsive:true, maintainAspectRatio:false,
-    animation: { duration: 0 },
-    plugins: { legend:{ display:false },
-      tooltip:{ callbacks:{ label: c => {
-        if(c.dataset.yAxisID==='y2') return `Socios: ${c.parsed.y}`;
-        return `${c.dataset.label}: $${c.parsed.y.toFixed(2)}M`;
-      }}}},
-    scales: {
-      x: { stacked:true, grid:{display:false}, ticks:{color:tickC,font:tf} },
-      y: { stacked:true, grid:{color:gridC}, ticks:{color:tickC,font:tf,callback:v=>`$${v.toFixed(1)}M`} },
-      y2: { type:'linear', position:'right', grid:{display:false},
-            min:0, max:170,
-            ticks:{ color:'#e85d04', font:tf, stepSize:20, callback:v=>`${v} soc.` },
- font:{size:9,family:'Arial'} } }
+    animation:{duration:0},
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:function(c){
+        if(c.dataset.yAxisID==='y2') return 'Socios: '+c.parsed.y;
+        return c.dataset.label+': $'+c.parsed.y.toFixed(2)+'M';
+      }}}
+    },
+    scales:{
+      x:{stacked:true, grid:{display:false}, ticks:{color:tickC,font:tf}},
+      y:{stacked:true, grid:{color:gridC},   ticks:{color:tickC,font:tf,
+         callback:function(v){return '$'+v.toFixed(1)+'M';}}},
+      y2:{type:'linear', position:'right', grid:{display:false},
+          min:0, max:170,
+          ticks:{color:'#e85d04', font:tf, stepSize:20,
+                 callback:function(v){return v+' soc.';}}}
     }
   }
 });
@@ -203,22 +209,24 @@ new Chart(document.getElementById('c2'), {
     labels: LBL,
     datasets:[{
       data: SUR,
-      backgroundColor: SUR.map(s => s>=0 ? 'rgba(12,163,12,0.8)' : 'rgba(208,59,59,0.8)'),
+      backgroundColor: SUR.map(function(s){return s>=0?'rgba(12,163,12,0.8)':'rgba(208,59,59,0.8)';}),
       borderRadius:3, borderWidth:0
     }]
   },
-  options: {
+  options:{
     responsive:true, maintainAspectRatio:false,
-    animation: { duration: 0 },
-    plugins: { legend:{display:false},
-      tooltip:{ callbacks:{ label: c => {
-        const v=c.parsed.y;
-        return `${v>=0?'Superávit':'Déficit'}: ${v<0?'-':''}$${Math.abs(v).toFixed(2)}M`;
-      }}}},
-    scales: {
-      x: { grid:{display:false}, ticks:{color:tickC,font:tf} },
-      y: { grid:{color:gridC}, ticks:{color:tickC,font:tf,
-           callback:v=>(v<0?'-':'')+'$'+Math.abs(v).toFixed(1)+'M'} }
+    animation:{duration:0},
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:function(c){
+        var v=c.parsed.y;
+        return (v>=0?'Superavit':'Deficit')+': '+(v<0?'-':'')+'$'+Math.abs(v).toFixed(2)+'M';
+      }}}
+    },
+    scales:{
+      x:{grid:{display:false}, ticks:{color:tickC,font:tf}},
+      y:{grid:{color:gridC},   ticks:{color:tickC,font:tf,
+         callback:function(v){return (v<0?'-':'')+'$'+Math.abs(v).toFixed(1)+'M';}}}
     }
   }
 });
